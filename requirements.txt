@@ -1,0 +1,9 @@
+flask
+flask-cors
+requests
+langchain-community
+langchain-huggingface
+langchain-text-splitters
+faiss-cpu
+groq
+werkzeug

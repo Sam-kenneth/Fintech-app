@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fintech Risk Analysis - API + Upload</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+        }
+
+        .panel {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 20px;
+            background: #f9f9f9;
+            overflow-y: auto;
+            max-height: 800px;
+        }
+
+        .panel-title {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: 600;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section-subtitle {
+            font-size: 1em;
+            color: #666;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 0.9em;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f0f0ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background: #e8e4ff;
+        }
+
+        .upload-area input[type="file"] {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 2em;
+            margin-bottom: 8px;
+        }
+
+        .upload-text {
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        .upload-subtext {
+            color: #999;
+            font-size: 0.85em;
+            margin-top: 5px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.95em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-small {
+            padding: 8px 15px;
+            font-size: 0.85em;
+            width: auto;
+        }
+
+        .status-box {
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 12px;
+            font-size: 0.9em;
+            display: none;
+        }
+
+        .status-box.show {
+            display: block;
+        }
+
+        .status-success {
+            background: #c8e6c9;
+            border-left: 4px solid #4caf50;
+            color: #2e7d32;
+        }
+
+        .status-error {
+            background: #ffcdd2;
+            border-left: 4px solid #f44336;
+            color: #c62828;
+        }
+
+        .status-info {
+            background: #bbdefb;
+            border-left: 4px solid #2196f3;
+            color: #1565c0;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 15px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .file-list {
+            margin-top: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            background: white;
+            display: none;
+        }
+
+        .file-item {
+            padding: 5px;
+            background: #e8f5e9;
+            border-left: 3px solid #4caf50;
+            margin-bottom: 5px;
+            border-radius: 3px;
+            font-size: 0.85em;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #ddd;
+            margin-bottom: 20px;
+            gap: 5px;
+        }
+
+        .tab-button {
+            padding: 10px 15px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            color: #999;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            width: auto;
+        }
+
+        .tab-button.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .result-box {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .result-title {
+            font-size: 0.95em;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .result-content {
+            color: #666;
+            line-height: 1.5;
+            max-height: 300px;
+            overflow-y: auto;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+            font-size: 0.85em;
+        }
+
+        .data-source {
+            display: inline-block;
+            background: #e3f2fd;
+            border-left: 3px solid #2196f3;
+            padding: 8px 12px;
+            margin: 5px 5px 5px 0;
+            border-radius: 3px;
+            font-size: 0.85em;
+            color: #1565c0;
+        }
+
+        .api-badge {
+            background: #fff3e0;
+            border-left: 3px solid #ff9800;
+            color: #e65100;
+        }
+
+        .upload-badge {
+            background: #f3e5f5;
+            border-left: 3px solid #9c27b0;
+            color: #6a1b9a;
+        }
+
+        .api-form-section {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border-left: 4px solid #ff9800;
+        }
+
+        .toggle-btn {
+            background: #f0f0f0;
+            color: #333;
+            padding: 10px 15px;
+            font-size: 0.9em;
+            width: auto;
+            cursor: pointer;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+        }
+
+        .toggle-content {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .toggle-content.show {
+            display: block;
+        }
+
+        @media (max-width: 1200px) {
+            .layout {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏦 Fintech Risk Analysis Platform</h1>
+            <p>API Integration + Multi-File Upload + AI Analysis</p>
+        </header>
+
+        <div class="content">
+            <div class="layout">
+                <!-- PANEL 1: CUSTOMER & API -->
+                <div class="panel">
+                    <div class="panel-title">👤 Customer Info</div>
+
+                    <div class="section">
+                        <div class="form-group">
+                            <label for="customerId">Customer ID *</label>
+                            <input type="text" id="customerId" placeholder="CUST-001" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="customerName">Customer Name</label>
+                            <input type="text" id="customerName" placeholder="John Doe">
+                        </div>
+                        <button class="btn-primary" id="createSessionBtn">Create Session</button>
+                        <div class="status-box" id="sessionStatus"></div>
+                    </div>
+
+                    <div class="panel-title">🔌 Fetch from APIs</div>
+
+                    <button class="toggle-btn" id="toggleApiForm">▼ Expand API Options</button>
+                    <div class="toggle-content" id="apiFormContent">
+                        <div class="api-form-section">
+                            <div class="form-group">
+                                <label for="panNumber">PAN Number</label>
+                                <input type="text" id="panNumber" placeholder="AAAPA5055K">
+                            </div>
+                            <div class="form-group">
+                                <label for="gstNumber">GST Number</label>
+                                <input type="text" id="gstNumber" placeholder="07AADPL7535R1Z0">
+                            </div>
+                            <div class="form-group">
+                                <label for="accountNumber">Bank Account</label>
+                                <input type="text" id="accountNumber" placeholder="12345678901234">
+                            </div>
+                            <div class="form-group">
+                                <label for="ifscCode">IFSC Code</label>
+                                <input type="text" id="ifscCode" placeholder="HDFC0000001">
+                            </div>
+                            <div class="form-group">
+                                <label for="months">Months of Bank Data</label>
+                                <input type="number" id="months" value="6" min="1" max="24">
+                            </div>
+                            <button class="btn-primary" id="fetchAllApiBtn">Fetch ALL from APIs</button>
+                            <div class="status-box" id="apiStatus"></div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-subtitle">OR Fetch Individual APIs:</div>
+                            <button class="btn-secondary btn-small" id="fetchGstBtn">Get GST</button>
+                            <button class="btn-secondary btn-small" id="fetchItrBtn">Get ITR</button>
+                            <button class="btn-secondary btn-small" id="fetchBankBtn">Get Bank</button>
+                            <button class="btn-secondary btn-small" id="fetchCreditBtn">Get Credit</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL 2: FILE UPLOAD -->
+                <div class="panel">
+                    <div class="panel-title">📁 Upload Documents</div>
+
+                    <div class="section">
+                        <div class="upload-area" id="uploadArea">
+                            <div class="upload-icon">📤</div>
+                            <div class="upload-text">Click or drag files here</div>
+                            <div class="upload-subtext">PDF, PNG, JPG, GIF (Max 100MB, 50 files)</div>
+                            <input type="file" id="fileInput" multiple accept=".pdf,.png,.jpg,.jpeg,.gif,.zip">
+                        </div>
+
+                        <div class="file-list" id="fileList"></div>
+                        <div id="fileCount" style="margin-top: 10px; text-align: center; display: none;">
+                            <div style="font-size: 2em; font-weight: bold; color: #667eea;" id="fileCountNum">0</div>
+                            <div style="color: #999;">Files Selected</div>
+                        </div>
+
+                        <button class="btn-primary" id="uploadBtn" style="display: none;">Upload Files</button>
+                        <div class="status-box" id="uploadStatus"></div>
+                    </div>
+
+                    <div class="panel-title">⚙️ Process All Data</div>
+
+                    <div class="section">
+                        <p style="color: #666; margin-bottom: 15px; font-size: 0.9em;">
+                            Process API data + uploaded files together
+                        </p>
+                        <button class="btn-primary" id="processBtn" disabled>Process All Documents</button>
+                        <div class="loading" id="processLoading">
+                            <div class="spinner"></div>
+                            <p style="color: #666; font-size: 0.9em;">Processing... (1-2 minutes)</p>
+                        </div>
+                        <div class="status-box" id="processStatus"></div>
+                    </div>
+                </div>
+
+                <!-- PANEL 3: RESULTS -->
+                <div class="panel">
+                    <div class="panel-title">📊 Analysis Results</div>
+
+                    <div id="noResults" class="status-box status-info show">
+                        👈 Create session and load data above to see results
+                    </div>
+
+                    <div id="resultsContent" style="display: none;">
+                        <!-- Data Sources Summary -->
+                        <div class="result-box">
+                            <div class="result-title">📍 Data Sources</div>
+                            <div id="dataSources" style="font-size: 0.85em;"></div>
+                        </div>
+
+                        <!-- Tabs -->
+                        <div class="tabs">
+                            <button class="tab-button active" data-tab="summary">Summary</button>
+                            <button class="tab-button" data-tab="risk">Risk</button>
+                            <button class="tab-button" data-tab="metrics">Metrics</button>
+                            <button class="tab-button" data-tab="report">Report</button>
+                        </div>
+
+                        <!-- Summary Tab -->
+                        <div id="summary" class="tab-content active">
+                            <div class="result-box">
+                                <div class="result-title">Customer Profile</div>
+                                <div style="font-size: 0.85em;">
+                                    <strong>ID:</strong> <span id="sumCustId">-</span><br>
+                                    <strong>Files:</strong> <span id="sumFileCount">0</span><br>
+                                    <strong>API Sources:</strong> <span id="sumApiCount">0</span>
+                                </div>
+                            </div>
+                            <div class="result-box">
+                                <div class="result-title">Quick Summary</div>
+                                <div class="result-content" id="summaryContent"></div>
+                            </div>
+                        </div>
+
+                        <!-- Risk Tab -->
+                        <div id="risk" class="tab-content">
+                            <div class="result-box">
+                                <div class="result-title">Risk Assessment</div>
+                                <div class="result-content" id="riskContent"></div>
+                            </div>
+                        </div>
+
+                        <!-- Metrics Tab -->
+                        <div id="metrics" class="tab-content">
+                            <div class="result-box">
+                                <div class="result-title">Financial Metrics</div>
+                                <div class="result-content" id="metricsContent"></div>
+                            </div>
+                        </div>
+
+                        <!-- Report Tab -->
+                        <div id="report" class="tab-content">
+                            <div class="result-box">
+                                <div class="result-title">Professional Report</div>
+                                <div class="result-content" id="reportContent"></div>
+                            </div>
+                        </div>
+
+                        <!-- Export -->
+                        <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <button class="btn-secondary" id="exportJsonBtn">📥 JSON</button>
+                            <button class="btn-secondary" id="exportTextBtn">📄 Report</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const customerId = document.getElementById('customerId');
+        const customerName = document.getElementById('customerName');
+        const createSessionBtn = document.getElementById('createSessionBtn');
+        const toggleApiForm = document.getElementById('toggleApiForm');
+        const apiFormContent = document.getElementById('apiFormContent');
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const processBtn = document.getElementById('processBtn');
+        const fileList = document.getElementById('fileList');
+        const fileCount = document.getElementById('fileCount');
+
+        let currentSession = null;
+        let selectedFiles = [];
+
+        // Toggle API Form
+        toggleApiForm.addEventListener('click', () => {
+            apiFormContent.classList.toggle('show');
+            toggleApiForm.textContent = apiFormContent.classList.contains('show') ? '▲ Collapse API Options' : '▼ Expand API Options';
+        });
+
+        // Create Session
+        createSessionBtn.addEventListener('click', () => {
+            const cid = customerId.value.trim();
+            const cname = customerName.value.trim();
+
+            if (!cid) {
+                showStatus('sessionStatus', 'Customer ID required', 'error');
+                return;
+            }
+
+            fetch('/api/create-session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ customer_id: cid, customer_name: cname })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    currentSession = cid;
+                    uploadArea.style.display = 'block';
+                    processBtn.disabled = false;
+                    showStatus('sessionStatus', '✓ ' + data.message, 'success');
+                    document.getElementById('noResults').style.display = 'none';
+                } else {
+                    showStatus('sessionStatus', data.error, 'error');
+                }
+            })
+            .catch(err => showStatus('sessionStatus', err.message, 'error'));
+        });
+
+        // Fetch All APIs
+        document.getElementById('fetchAllApiBtn').addEventListener('click', () => {
+            if (!currentSession) {
+                showStatus('apiStatus', 'Create session first', 'error');
+                return;
+            }
+
+            const payload = {
+                customer_id: currentSession,
+                pan_number: document.getElementById('panNumber').value,
+                gst_number: document.getElementById('gstNumber').value,
+                account_number: document.getElementById('accountNumber').value,
+                ifsc_code: document.getElementById('ifscCode').value,
+                months: parseInt(document.getElementById('months').value)
+            };
+
+            fetch('/api/fetch-documents', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showStatus('apiStatus', `✓ Fetched ${data.total_documents_fetched} documents from APIs`, 'success');
+                } else {
+                    showStatus('apiStatus', data.error, 'error');
+                }
+            })
+            .catch(err => showStatus('apiStatus', err.message, 'error'));
+        });
+
+        // File Upload
+        uploadArea.addEventListener('click', () => fileInput.click());
+        uploadArea.addEventListener('dragover', e => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        uploadArea.addEventListener('drop', e => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+        fileInput.addEventListener('change', () => handleFiles(fileInput.files));
+
+        function handleFiles(files) {
+            selectedFiles = Array.from(files);
+            displayFileList();
+            fileCount.style.display = selectedFiles.length > 0 ? 'block' : 'none';
+            uploadBtn.style.display = selectedFiles.length > 0 ? 'block' : 'none';
+        }
+
+        function displayFileList() {
+            fileList.innerHTML = '';
+            selectedFiles.forEach(file => {
+                const item = document.createElement('div');
+                item.className = 'file-item';
+                item.textContent = `📄 ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`;
+                fileList.appendChild(item);
+            });
+            fileList.style.display = selectedFiles.length > 0 ? 'block' : 'none';
+            document.getElementById('fileCountNum').textContent = selectedFiles.length;
+        }
+
+        uploadBtn.addEventListener('click', () => {
+            if (!currentSession) {
+                showStatus('uploadStatus', 'Create session first', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('customer_id', currentSession);
+            selectedFiles.forEach(file => formData.append('files', file));
+
+            fetch('/api/upload-multiple', {
+                method: 'POST',
+                body: formData
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showStatus('uploadStatus', `✓ ${data.uploaded_files.length} files uploaded`, 'success');
+                    selectedFiles = [];
+                    fileInput.value = '';
+                    displayFileList();
+                    uploadBtn.style.display = 'none';
+                } else {
+                    showStatus('uploadStatus', data.error, 'error');
+                }
+            })
+            .catch(err => showStatus('uploadStatus', err.message, 'error'));
+        });
+
+        // Process All
+        processBtn.addEventListener('click', () => {
+            if (!currentSession) return;
+
+            showLoading('processLoading', true);
+
+            fetch('/api/process-all', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ customer_id: currentSession })
+            })
+            .then(r => r.json())
+            .then(data => {
+                showLoading('processLoading', false);
+                if (data.success) {
+                    fetchAndDisplayResults();
+                    showStatus('processStatus', '✓ Processing complete', 'success');
+                } else {
+                    showStatus('processStatus', data.error, 'error');
+                }
+            })
+            .catch(err => {
+                showLoading('processLoading', false);
+                showStatus('processStatus', err.message, 'error');
+            });
+        });
+
+        function fetchAndDisplayResults() {
+            fetch('/api/get-analysis', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ customer_id: currentSession })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    displayResults(data);
+                }
+            });
+        }
+
+        function displayResults(data) {
+            const session = data.session_info;
+            const analysis = data.analysis;
+
+            document.getElementById('noResults').style.display = 'none';
+            document.getElementById('resultsContent').style.display = 'block';
+
+            // Data Sources
+            let sourcesHtml = '';
+            if (session.uploaded_files.length > 0) {
+                sourcesHtml += '<div class="data-source upload-badge">📤 Uploaded: ' + session.uploaded_files.length + '</div>';
+            }
+            if (session.api_sources.length > 0) {
+                sourcesHtml += '<div class="data-source api-badge">🔌 API: ' + session.api_sources.join(', ') + '</div>';
+            }
+            document.getElementById('dataSources').innerHTML = sourcesHtml;
+
+            // Summary
+            document.getElementById('sumCustId').textContent = data.customer_id;
+            document.getElementById('sumFileCount').textContent = session.uploaded_file_count;
+            document.getElementById('sumApiCount').textContent = session.api_source_count;
+            document.getElementById('summaryContent').textContent = analysis.risk_analysis ? analysis.risk_analysis.substring(0, 300) : 'N/A';
+
+            // Risk
+            document.getElementById('riskContent').textContent = analysis.risk_analysis || 'N/A';
+
+            // Metrics
+            document.getElementById('metricsContent').textContent = analysis.financial_metrics || 'N/A';
+
+            // Report
+            document.getElementById('reportContent').textContent = analysis.report || 'N/A';
+
+            window.analysisData = data;
+        }
+
+        // Tab Navigation
+        document.querySelectorAll('.tab-button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tab = btn.dataset.tab;
+                document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(tab).classList.add('active');
+            });
+        });
+
+        // Export
+        document.getElementById('exportJsonBtn').addEventListener('click', () => {
+            if (!window.analysisData) return;
+            const json = JSON.stringify(window.analysisData, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            downloadFile(blob, `analysis_${currentSession}.json`);
+        });
+
+        document.getElementById('exportTextBtn').addEventListener('click', () => {
+            if (!window.analysisData) return;
+            const text = window.analysisData.analysis.report || '';
+            const blob = new Blob([text], { type: 'text/plain' });
+            downloadFile(blob, `report_${currentSession}.txt`);
+        });
+
+        function downloadFile(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Helpers
+        function showStatus(elementId, message, type) {
+            const el = document.getElementById(elementId);
+            el.textContent = message;
+            el.className = `status-box status-${type} show`;
+        }
+
+        function showLoading(elementId, show) {
+            const el = document.getElementById(elementId);
+            el.classList.toggle('show', show);
+        }
+    </script>
+</body>
+</html>
