@@ -13,7 +13,8 @@ import zipfile
 from io import BytesIO
 
 # ✅ IMPORT LLM PROVIDER (NEW)
-from llm_provider import get_llm_provider
+from .llm_provider import get_llm_provider
+from .financial_api_integration import FinancialDataIntegration, api_data_to_text
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
